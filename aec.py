@@ -23,7 +23,6 @@ def aec(model_path, mixed_path, ref_path, output_path, gain=1.0):
     f_len = 320
     f_step = 160
     l = 4000  # 250ms
-    num_frames = total_sig_len // l
 
     delta = l - total_sig_len % l
 
@@ -31,6 +30,8 @@ def aec(model_path, mixed_path, ref_path, output_path, gain=1.0):
         padding = np.zeros(delta)
         mic_sig = np.concatenate((mic_sig, padding))
         ref_sig = np.concatenate((ref_sig, padding))
+
+    num_frames = len(mic_sig) // l
 
     concat_sig = np.concatenate((mic_sig, ref_sig))
     frames = np.split(concat_sig, num_frames*2)
@@ -42,7 +43,7 @@ def aec(model_path, mixed_path, ref_path, output_path, gain=1.0):
     stacked_z = tf.concat([mic_z, ref_z], axis=-1)
 
     speech_masks = model(stacked_z)
-    mask_prods = tf.multiply(mic_z, tf.cast(speech_masks, tf.complex64))
+    mask_prods = tf.multiply(mic_z, tf.cast(speech_masks, tf.complex128))
 
     rec_speech = istft(mask_prods)
     clean_signal = tf.reshape(rec_speech, [-1])

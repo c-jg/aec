@@ -28,11 +28,6 @@ def load_wav(file_path):
     sig, sr = tf.audio.decode_wav(file_contents, desired_channels=1)
     sig = tf.squeeze(sig, axis=-1)
 
-    sig = tf.cond(sr != 16000,
-                  true_fn=lambda: tfio.audio.resample(sig, rate_in=tf.cast(sr, dtype=tf.int64),
-                                                      rate_out=16000),
-                  false_fn=lambda: sig)
-
     return sig, sr
 
 
